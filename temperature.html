@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Converter</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width">
+        <script src="js/jquery-1.11.2/jquery-1.11.2.min.js"></script>
+    </head>
+    <body>
+        <div data-role="page" id="page-main">
+            <script>
+                var link = "http://www.weatherbase.com/weather/countryall.php3";
+                function capitalizeFirstLetter(string) {
+                    return string.charAt(0).toUpperCase() + string.slice(1);
+                }
+                $.get(link, function(response) {
+                    var nohover = $(response).find('#row-nohover').find("a");
+                    var total = "country,avg_temp,high_temp,low_temp,precipitation\n";
+                    var processed;
+                    for (var i = 0, processed = 0, len = nohover.length; i < len; i++) {
+                        var newLink = nohover[i].getAttribute("href");
+                        newLink = "http://www.weatherbase.com" + newLink;
+
+                        $.get(newLink, function(response2) {
+                            var countryName = $(response2).find("#left-content").find("#headerfont").text();
+
+                            countryName = countryName.toLowerCase();
+                            countryName = capitalizeFirstLetter(countryName);
+
+                            //console.log($(response2).find("tbody:eq(2)").children());
+                            var avgTemp = $(response2).find("tbody:eq(2)").children()[1];
+                            var highTemp = $(response2).find("tbody:eq(2)").children()[2];
+                            var lowTemp = $(response2).find("tbody:eq(2)").children()[3];
+                            var precip = $(response2).find("tbody:eq(2)").children()[4];
+                            //console.log(avgTemp);
+                            avgTemp = $(avgTemp).children()[1].innerHTML;
+                            highTemp = $(highTemp).children()[1].innerHTML;
+                            lowTemp = $(lowTemp).children()[1].innerHTML;
+                            precip = $(precip).children()[1].innerHTML;
+                            total += countryName + "," + avgTemp + "," + highTemp + "," + lowTemp + "," + precip + "\n";
+                            processed++;
+                            if (processed === 240) {
+                                console.log(total);
+                                var csvContent = "data:text/csv;charset=utf-8,";
+                                csvContent += total;
+                                var encodedUri = encodeURI(csvContent);
+                                window.open(encodedUri);
+                            }
+                        });
+                    }
+
+
+                });
+            </script>
+        </div>
+    </body>
+</html>
